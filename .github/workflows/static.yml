@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>BNBChain Balance Checker & Lark Notifier with CORS Proxy</title>
+    <script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js" type="application/javascript"></script>
+</head>
+<body>
+    <h1>BNBChain USDT Balance Checker & Lark Notifier with CORS Proxy</h1>
+    <div>
+        <p>Address: 0xF04f1DC6Fa5E2ccBEFc5E4EB9ec694653442f45e</p>
+        <p id="balance">USDT Balance: </p>
+        <h2>Logs:</h2>
+        <div id="log" style="border: 1px solid #000; padding: 10px; height: 150px; overflow-y: scroll;"></div>
+    </div>
+
+    <script>
+        const balanceDisplay = document.getElementById('balance');
+        const logDiv = document.getElementById('log');
+        // 使用CORS代理服务
+        const corsProxyURL = 'https://cors-anywhere.herokuapp.com/';
+        const larkWebhookURL = 'YOUR_LARK_WEBHOOK_URL'; // 替换为你的Lark机器人Webhook URL
+        const fullURL = corsProxyURL + larkWebhookURL; // 代理URL拼接Webhook URL
+
+        function addLog(message) {
+            const time = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `<p>[${time}] ${message}</p>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            notifyLark(message); // Send notification to Lark
+        }
+
+        async function notifyLark(message) {
+            try {
+                const response = await fetch(fullURL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest', // 有些CORS代理可能需要这个头来处理请求
+                    },
+                    body: JSON.stringify({
+                        msg_type: 'text',
+                        content: {
+                            text: message
+                        }
+                    }),
+                });
+
+                if (!response.ok) throw new Error('Network response was not ok.');
+                console.log('Lark notification sent through proxy:', await response.text());
+            } catch (error) {
+                console.error('Error sending notification to Lark through proxy:', error);
+            }
+        }
+
+        // 余下的函数保持不变...
+    </script>
+</body>
+</html>
